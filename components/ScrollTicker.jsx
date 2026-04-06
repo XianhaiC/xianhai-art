@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import useAberration from "@/hooks/useAberration";
 
 const BASE_ITEMS = ["先海", "Digital Paintings", "Limited Editions", "Fine Art Prints"];
 const ITEMS = Array.from({ length: 12 }, () => BASE_ITEMS).flat();
@@ -53,35 +54,14 @@ function Track({ translateX }) {
 
 export default function ScrollTicker() {
   const [offset, setOffset] = useState(0);
-  const [spread, setSpread] = useState(0); // signed: + = down, - = up
-  const lastScrollY = useRef(0);
-  const lastTime = useRef(Date.now());
-  const decayRef = useRef(null);
+  const spread = useAberration();
 
   useEffect(() => {
     function onScroll() {
-      const now = Date.now();
-      const dt = Math.max(now - lastTime.current, 1);
-      const delta = window.scrollY - lastScrollY.current;
-      // px/ms, need to scroll quite fast to hit max
-      const velocity = delta / dt;
-
-      lastScrollY.current = window.scrollY;
-      lastTime.current = now;
-
       setOffset(window.scrollY * 0.35);
-      // clamp to ±18px, requires ~1px/ms (fast scroll) to reach max
-      setSpread(Math.max(Math.min(velocity * 18, 18), -18));
-
-      if (decayRef.current) clearTimeout(decayRef.current);
-      decayRef.current = setTimeout(() => setSpread(0), 150);
     }
-
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      if (decayRef.current) clearTimeout(decayRef.current);
-    };
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   return (
