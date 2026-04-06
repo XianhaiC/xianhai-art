@@ -87,34 +87,34 @@ export default function ScrollTicker() {
   return (
     <div style={{ position: "relative", width: "100%", height: "40px" }}>
 
-      {/* Magenta — slowest, furthest lag */}
+      {/* Magenta — slowest */}
       <div style={{
         position: "absolute", left: 0, right: 0, zIndex: 1,
         top: `${spread}px`,
         height: "40px",
-        backgroundColor: "#ff00cc",
+        backgroundColor: "#ff00ff",
         overflow: "hidden",
         transition: "top 0.45s cubic-bezier(0.25, 1, 0.5, 1)",
       }}>
         <Track translateX={offset - 2400} />
       </div>
 
-      {/* Yellow — medium lag */}
+      {/* Yellow — medium */}
       <div style={{
         position: "absolute", left: 0, right: 0, zIndex: 2,
-        top: `${spread}px`,
+        top: `${spread * 0.67}px`,
         height: "40px",
-        backgroundColor: "#ffee00",
+        backgroundColor: "#ffff00",
         overflow: "hidden",
         transition: "top 0.28s cubic-bezier(0.25, 1, 0.5, 1)",
       }}>
         <Track translateX={offset - 2400} />
       </div>
 
-      {/* Cyan — fastest, closest to black */}
+      {/* Cyan — fastest */}
       <div style={{
         position: "absolute", left: 0, right: 0, zIndex: 3,
-        top: `${spread}px`,
+        top: `${spread * 0.33}px`,
         height: "40px",
         backgroundColor: "#00ffff",
         overflow: "hidden",
@@ -123,7 +123,7 @@ export default function ScrollTicker() {
         <Track translateX={offset - 2400} />
       </div>
 
-      {/* Black — always on position, no transition */}
+      {/* Black — on top, no transition */}
       <div style={{
         position: "absolute", left: 0, right: 0, zIndex: 4,
         top: 0,

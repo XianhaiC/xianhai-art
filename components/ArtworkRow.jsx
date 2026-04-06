@@ -187,8 +187,7 @@ export default function ArtworkRow({ artwork, index, total }) {
           gridTemplateColumns: "1fr 1fr",
           alignItems: "stretch",
           opacity: visible ? 1 : 0,
-          transform: visible ? "translateY(0)" : "translateY(32px)",
-          transition: "opacity 0.7s ease, transform 0.7s ease",
+          transition: "opacity 0.7s ease",
         }}
       >
         {isImageLeft ? (
