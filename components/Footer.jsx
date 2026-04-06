@@ -8,13 +8,13 @@ export default function Footer() {
         display: "flex",
         justifyContent: "space-between",
         alignItems: "flex-end",
-        borderTop: "1px solid var(--divider)",
+        backgroundColor: "#000000",
       }}
     >
       <img
-        src="/art-logo.png"
+        src="/art-simple-logo.png"
         alt="先海"
-        style={{ height: "32px", width: "auto" }}
+        style={{ height: "32px", width: "auto", filter: "brightness(0) invert(1)" }}
       />
 
       <ul
@@ -38,11 +38,11 @@ export default function Footer() {
                 fontSize: "11px",
                 letterSpacing: "0.12em",
                 textTransform: "uppercase",
-                color: "var(--muted)",
+                color: "#666666",
                 transition: "color 0.2s",
               }}
-              onMouseEnter={(e) => (e.target.style.color = "var(--ink)")}
-              onMouseLeave={(e) => (e.target.style.color = "var(--muted)")}
+              onMouseEnter={(e) => (e.target.style.color = "#ffffff")}
+              onMouseLeave={(e) => (e.target.style.color = "#666666")}
             >
               {label}
             </a>
@@ -53,7 +53,7 @@ export default function Footer() {
       <span
         style={{
           fontSize: "11px",
-          color: "var(--muted)",
+          color: "#666666",
           letterSpacing: "0.06em",
         }}
       >

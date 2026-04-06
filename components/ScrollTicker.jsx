@@ -23,12 +23,11 @@ const ITEM_STYLE = {
   alignItems: "center",
   gap: "24px",
   paddingRight: "40px",
-  fontSize: "13px",
+  fontSize: "11px",
   letterSpacing: "0.14em",
   textTransform: "uppercase",
-  fontFamily: "var(--font-counter)",
-  fontWeight: 100,
-  fontStyle: "italic",
+  fontFamily: "var(--font-sans)",
+  fontWeight: 300,
   color: "#ffffff",
 };
 

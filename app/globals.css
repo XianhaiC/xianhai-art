@@ -12,7 +12,12 @@
   --font-counter: 'Bodoni Moda', Georgia, serif;
 }
 
-html,
+html {
+  max-width: 100dvw;
+  overflow-x: hidden;
+  background-color: #000000;
+}
+
 body {
   max-width: 100dvw;
   overflow-x: hidden;
