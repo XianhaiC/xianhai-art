@@ -5,10 +5,33 @@ import { useEffect, useRef, useState } from "react";
 const NAV_HEIGHT = 72;
 const LARGE_PX = 420;
 const SMALL_PX = 44;
-const SCROLL_DISTANCE = 400; // px of scroll over which animation runs
+const SCROLL_DISTANCE = 400;
 
 function lerp(a, b, t) {
   return a + (b - a) * t;
+}
+
+function GhostLayer({ offset, transition, filter, fontSize, fullOpacity, simpleOpacity }) {
+  return (
+    <div style={{
+      position: "absolute", top: `${offset}px`, left: 0,
+      transition, pointerEvents: "none",
+    }}>
+      <img src="/art-logo.png" alt="" aria-hidden="true" style={{
+        height: `${fontSize}px`, width: "auto", display: "block",
+        filter,
+        opacity: fullOpacity,
+        transition: "opacity 0.15s ease",
+      }} />
+      <img src="/art-simple-logo.png" alt="" aria-hidden="true" style={{
+        position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)",
+        height: `${fontSize}px`, width: "auto", display: "block",
+        filter,
+        opacity: simpleOpacity,
+        transition: "opacity 0.15s ease",
+      }} />
+    </div>
+  );
 }
 
 export default function Header() {
@@ -19,7 +42,6 @@ export default function Header() {
   const decayRef = useRef(null);
 
   useEffect(() => {
-    // Sync immediately to current scroll position on mount (handles page reload mid-scroll)
     const p = Math.min(Math.max(window.scrollY / SCROLL_DISTANCE, 0), 1);
     setProgress(p);
     lastScrollY.current = window.scrollY;
@@ -31,14 +53,11 @@ export default function Header() {
       const dt = Math.max(now - lastTime.current, 1);
       const delta = window.scrollY - lastScrollY.current;
       const velocity = delta / dt;
-
       lastScrollY.current = window.scrollY;
       lastTime.current = now;
-
       const p = Math.min(Math.max(window.scrollY / SCROLL_DISTANCE, 0), 1);
       setProgress(p);
       setAberration(Math.max(Math.min(velocity * 18, 18), -18));
-
       if (decayRef.current) clearTimeout(decayRef.current);
       decayRef.current = setTimeout(() => setAberration(0), 150);
     }
@@ -50,123 +69,82 @@ export default function Header() {
   }, []);
 
   const fontSize = lerp(LARGE_PX, SMALL_PX, progress);
-  const logoAberration = progress >= 1 ? 0 : aberration;
-
-  // Vertical: center of viewport → center of nav bar
-  const topCenter = typeof window !== "undefined"
-    ? window.innerHeight / 2 - fontSize / 2
-    : 300;
+  const topCenter = typeof window !== "undefined" ? window.innerHeight / 2 - fontSize / 2 : 300;
   const topNav = (NAV_HEIGHT - fontSize) / 2;
   const logoTop = lerp(topCenter, topNav, progress);
 
+  const morphT = Math.min(Math.max((progress - 0.9) / 0.1, 0), 1);
+  const fullOpacity = 1 - morphT;
+  const simpleOpacity = morphT;
+  const activeAberration = progress >= 1 ? 0 : aberration;
+  const sharedProps = { fontSize, fullOpacity, simpleOpacity };
+
   return (
     <>
-      {/* Logo — scroll-driven, no nav bar */}
-      <a
-        href="#"
-        style={{
-          position: "fixed",
-          zIndex: 101,
-          left: "50%",
-          transform: "translateX(-50%)",
-          top: `${logoTop}px`,
-          userSelect: "none",
-          lineHeight: 0,
-          mixBlendMode: "difference",
-        }}
-      >
-        {/* Magenta ghost — slowest */}
-        <div style={{
-          position: "absolute", top: `${logoAberration}px`, left: 0,
-          transition: "top 0.45s cubic-bezier(0.25, 1, 0.5, 1)",
-          pointerEvents: "none",
-        }}>
-          <img src="/art-logo.png" alt="" aria-hidden="true" style={{
-            height: `${fontSize}px`, width: "auto", display: "block",
-            filter: "brightness(0) saturate(1) invert(13%) sepia(99%) saturate(7404%) hue-rotate(309deg) brightness(96%) contrast(103%)",
-          }} />
-        </div>
-        {/* Yellow ghost — medium */}
-        <div style={{
-          position: "absolute", top: `${logoAberration * 0.67}px`, left: 0,
-          transition: "top 0.28s cubic-bezier(0.25, 1, 0.5, 1)",
-          pointerEvents: "none",
-        }}>
-          <img src="/art-logo.png" alt="" aria-hidden="true" style={{
-            height: `${fontSize}px`, width: "auto", display: "block",
-            filter: "brightness(0) saturate(1) invert(94%) sepia(94%) saturate(743%) hue-rotate(358deg) brightness(103%) contrast(107%)",
-          }} />
-        </div>
-        {/* Cyan ghost — fastest */}
-        <div style={{
-          position: "absolute", top: `${logoAberration * 0.33}px`, left: 0,
-          transition: "top 0.14s cubic-bezier(0.25, 1, 0.5, 1)",
-          pointerEvents: "none",
-        }}>
-          <img src="/art-logo.png" alt="" aria-hidden="true" style={{
-            height: `${fontSize}px`, width: "auto", display: "block",
-            filter: "brightness(0) saturate(1) invert(88%) sepia(53%) saturate(4417%) hue-rotate(152deg) brightness(101%) contrast(101%)",
-          }} />
-        </div>
-        {/* Main logo — white so difference blend inverts against background */}
-        <img
-          src="/art-logo.png"
-          alt="先海"
-          style={{
-            height: `${fontSize}px`,
-            width: "auto",
-            display: "block",
-            position: "relative",
-            filter: "brightness(0) invert(1)",
-          }}
+      <a href="#" style={{
+        position: "fixed",
+        left: "50%",
+        transform: "translateX(-50%)",
+        top: `${logoTop}px`,
+        zIndex: 101,
+        userSelect: "none",
+        lineHeight: 0,
+        display: "block",
+        mixBlendMode: "difference",
+      }}>
+        {/* These filter chains were working before the morph feature was added.
+            They produce approximate CMYK colors after the difference blend. */}
+        <GhostLayer
+          offset={activeAberration}
+          transition="top 0.45s cubic-bezier(0.25, 1, 0.5, 1)"
+          filter="brightness(0) saturate(1) invert(13%) sepia(99%) saturate(7404%) hue-rotate(309deg) brightness(96%) contrast(103%)"
+          {...sharedProps}
         />
+        <GhostLayer
+          offset={activeAberration * 0.67}
+          transition="top 0.28s cubic-bezier(0.25, 1, 0.5, 1)"
+          filter="brightness(0) saturate(1) invert(94%) sepia(94%) saturate(743%) hue-rotate(358deg) brightness(103%) contrast(107%)"
+          {...sharedProps}
+        />
+        <GhostLayer
+          offset={activeAberration * 0.33}
+          transition="top 0.14s cubic-bezier(0.25, 1, 0.5, 1)"
+          filter="brightness(0) saturate(1) invert(88%) sepia(53%) saturate(4417%) hue-rotate(152deg) brightness(101%) contrast(101%)"
+          {...sharedProps}
+        />
+
+        {/* Main logo — white, sits on top of ghosts */}
+        <div style={{ position: "relative" }}>
+          <img src="/art-logo.png" alt="先海" style={{
+            height: `${fontSize}px`, width: "auto", display: "block",
+            filter: "brightness(0) invert(1)",
+            opacity: fullOpacity,
+            transition: "opacity 0.15s ease",
+          }} />
+          <img src="/art-simple-logo.png" alt="先海" style={{
+            position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)",
+            height: `${fontSize}px`, width: "auto", display: "block",
+            filter: "brightness(0) invert(1)",
+            opacity: simpleOpacity,
+            transition: "opacity 0.15s ease",
+          }} />
+        </div>
       </a>
 
-      {/* Hero content — fades out as you scroll */}
-      <section
-        style={{
-          minHeight: "100vh",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "flex-end",
-          padding: "0 60px 80px",
-          opacity: Math.max(0, 1 - progress * 3),
-          pointerEvents: progress > 0.3 ? "none" : "auto",
-        }}
-      >
-        <p
-          style={{
-            fontSize: "13px",
-            color: "var(--muted)",
-            letterSpacing: "0.04em",
-            maxWidth: "360px",
-            lineHeight: 1.7,
-            marginBottom: "48px",
-          }}
-        >
-          Original 2D digital paintings. Each piece available as a limited fine
-          art print, shipped worldwide.
+      <section style={{
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "flex-end",
+        padding: "0 60px 80px",
+        opacity: Math.max(0, 1 - progress * 3),
+        pointerEvents: progress > 0.3 ? "none" : "auto",
+      }}>
+        <p style={{ fontSize: "13px", color: "var(--muted)", letterSpacing: "0.04em", maxWidth: "360px", lineHeight: 1.7, marginBottom: "48px" }}>
+          Original 2D digital paintings. Each piece available as a limited fine art print, shipped worldwide.
         </p>
-
-        <p
-          style={{
-            fontSize: "11px",
-            letterSpacing: "0.14em",
-            textTransform: "uppercase",
-            color: "var(--muted)",
-            display: "flex",
-            alignItems: "center",
-            gap: "12px",
-          }}
-        >
-          <span
-            style={{
-              display: "block",
-              width: "32px",
-              height: "1px",
-              backgroundColor: "var(--muted)",
-            }}
-          />
+        <p style={{ fontSize: "11px", letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--muted)", display: "flex", alignItems: "center", gap: "12px" }}>
+          <span style={{ display: "block", width: "32px", height: "1px", backgroundColor: "var(--muted)" }} />
           Scroll to explore
         </p>
       </section>
