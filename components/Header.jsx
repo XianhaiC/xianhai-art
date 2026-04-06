@@ -61,53 +61,7 @@ export default function Header() {
 
   return (
     <>
-      {/* Nav bar background + links — fades in with scroll */}
-      <nav
-        style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 100,
-          height: `${NAV_HEIGHT}px`,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "flex-end",
-          padding: "0 60px",
-          backgroundColor: `rgba(255, 255, 255, ${progress})`,
-          pointerEvents: progress > 0.5 ? "auto" : "none",
-        }}
-      >
-        <ul
-          style={{
-            display: "flex",
-            gap: "36px",
-            listStyle: "none",
-            opacity: progress,
-          }}
-        >
-          {["Works", "About", "Contact"].map((label) => (
-            <li key={label}>
-              <a
-                href={`#${label.toLowerCase()}`}
-                style={{
-                  fontSize: "11px",
-                  letterSpacing: "0.14em",
-                  textTransform: "uppercase",
-                  color: "var(--muted)",
-                  transition: "color 0.2s",
-                }}
-                onMouseEnter={(e) => (e.target.style.color = "var(--ink)")}
-                onMouseLeave={(e) => (e.target.style.color = "var(--muted)")}
-              >
-                {label}
-              </a>
-            </li>
-          ))}
-        </ul>
-      </nav>
-
-      {/* Logo — scroll-driven with chromatic aberration */}
+      {/* Logo — scroll-driven, no nav bar */}
       <a
         href="#"
         style={{
@@ -118,6 +72,7 @@ export default function Header() {
           top: `${logoTop}px`,
           userSelect: "none",
           lineHeight: 0,
+          mixBlendMode: "difference",
         }}
       >
         {/* Magenta ghost — slowest */}
@@ -153,7 +108,7 @@ export default function Header() {
             filter: "brightness(0) saturate(1) invert(88%) sepia(53%) saturate(4417%) hue-rotate(152deg) brightness(101%) contrast(101%)",
           }} />
         </div>
-        {/* Main logo on top */}
+        {/* Main logo — white so difference blend inverts against background */}
         <img
           src="/art-logo.png"
           alt="先海"
@@ -162,6 +117,7 @@ export default function Header() {
             width: "auto",
             display: "block",
             position: "relative",
+            filter: "brightness(0) invert(1)",
           }}
         />
       </a>
