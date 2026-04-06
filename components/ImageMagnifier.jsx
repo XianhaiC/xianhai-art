@@ -39,7 +39,7 @@ export default function ImageMagnifier({ src, imageRef, onClose }) {
         style={{
           position: "fixed",
           inset: 0,
-          zIndex: 10,
+          zIndex: 200,
           backgroundColor: "rgba(0,0,0,0.75)",
           cursor: "zoom-out",
         }}
@@ -56,7 +56,7 @@ export default function ImageMagnifier({ src, imageRef, onClose }) {
           top: rect.top,
           width: rect.width,
           height: rect.height,
-          zIndex: 11,
+          zIndex: 201,
           cursor: isZoomed ? "crosshair" : "zoom-out",
           overflow: "hidden",
         }}
@@ -135,7 +135,7 @@ export default function ImageMagnifier({ src, imageRef, onClose }) {
         bottom: "24px",
         left: "50%",
         transform: "translateX(-50%)",
-        zIndex: 12,
+        zIndex: 202,
         fontSize: "11px",
         letterSpacing: "0.14em",
         textTransform: "uppercase",

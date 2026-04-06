@@ -12,11 +12,18 @@ function lerp(a, b, t) {
 }
 
 export default function Header() {
-  const [progress, setProgress] = useState(0); // 0 = top, 1 = fully in nav
-  const [aberration, setAberration] = useState(0); // signed px, driven by velocity
+  const [progress, setProgress] = useState(0);
+  const [aberration, setAberration] = useState(0);
   const lastScrollY = useRef(0);
   const lastTime = useRef(Date.now());
   const decayRef = useRef(null);
+
+  useEffect(() => {
+    // Sync immediately to current scroll position on mount (handles page reload mid-scroll)
+    const p = Math.min(Math.max(window.scrollY / SCROLL_DISTANCE, 0), 1);
+    setProgress(p);
+    lastScrollY.current = window.scrollY;
+  }, []);
 
   useEffect(() => {
     function onScroll() {
