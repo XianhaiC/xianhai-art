@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
-export default function useAberration({ maxOffset = 18, decay = 150 } = {}) {
+export default function useAberration({ maxOffset = 9, decay = 150 } = {}) {
   const [aberration, setAberration] = useState(0);
   const lastScrollY = useRef(0);
   const lastTime = useRef(Date.now());

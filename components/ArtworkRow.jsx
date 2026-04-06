@@ -119,12 +119,44 @@ export default function ArtworkRow({ artwork, index, total }) {
         }}>
           {number}
         </span>
-        <img
-          src="/sparkle.png"
-          alt=""
-          aria-hidden="true"
-          style={{ height: "32px", width: "auto", marginBottom: "25px", position: "relative" }}
-        />
+        {/* Sparkle with aberration ghosts */}
+        <div style={{ position: "relative", marginBottom: "25px", lineHeight: 0 }}>
+          {/* Magenta ghost — exact #ff00ff via CSS mask */}
+          <div aria-hidden="true" style={{
+            position: "absolute", top: `${aberration}px`, left: 0,
+            height: "32px", width: "100%",
+            backgroundColor: "#ff00ff",
+            WebkitMaskImage: "url(/sparkle.png)", maskImage: "url(/sparkle.png)",
+            WebkitMaskSize: "auto 32px", maskSize: "auto 32px",
+            WebkitMaskRepeat: "no-repeat", maskRepeat: "no-repeat",
+            pointerEvents: "none",
+            transition: "top 0.45s cubic-bezier(0.25, 1, 0.5, 1)",
+          }} />
+          {/* Yellow ghost — exact #ffff00 */}
+          <div aria-hidden="true" style={{
+            position: "absolute", top: `${aberration * 0.67}px`, left: 0,
+            height: "32px", width: "100%",
+            backgroundColor: "#ffff00",
+            WebkitMaskImage: "url(/sparkle.png)", maskImage: "url(/sparkle.png)",
+            WebkitMaskSize: "auto 32px", maskSize: "auto 32px",
+            WebkitMaskRepeat: "no-repeat", maskRepeat: "no-repeat",
+            pointerEvents: "none",
+            transition: "top 0.28s cubic-bezier(0.25, 1, 0.5, 1)",
+          }} />
+          {/* Cyan ghost — exact #00ffff */}
+          <div aria-hidden="true" style={{
+            position: "absolute", top: `${aberration * 0.33}px`, left: 0,
+            height: "32px", width: "100%",
+            backgroundColor: "#00ffff",
+            WebkitMaskImage: "url(/sparkle.png)", maskImage: "url(/sparkle.png)",
+            WebkitMaskSize: "auto 32px", maskSize: "auto 32px",
+            WebkitMaskRepeat: "no-repeat", maskRepeat: "no-repeat",
+            pointerEvents: "none",
+            transition: "top 0.14s cubic-bezier(0.25, 1, 0.5, 1)",
+          }} />
+          {/* Main sparkle */}
+          <img src="/sparkle.png" alt="" aria-hidden="true" style={{ height: "32px", width: "auto", position: "relative" }} />
+        </div>
       </div>
 
       <p
