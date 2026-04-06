@@ -37,11 +37,13 @@ function GhostLayer({ offset, transition, filter, fontSize, fullOpacity, simpleO
 export default function Header() {
   const [progress, setProgress] = useState(0);
   const [aberration, setAberration] = useState(0);
+  const [viewportHeight, setViewportHeight] = useState(0);
   const lastScrollY = useRef(0);
   const lastTime = useRef(Date.now());
   const decayRef = useRef(null);
 
   useEffect(() => {
+    setViewportHeight(window.innerHeight);
     const p = Math.min(Math.max(window.scrollY / SCROLL_DISTANCE, 0), 1);
     setProgress(p);
     lastScrollY.current = window.scrollY;
@@ -69,7 +71,7 @@ export default function Header() {
   }, []);
 
   const fontSize = lerp(LARGE_PX, SMALL_PX, progress);
-  const topCenter = typeof window !== "undefined" ? window.innerHeight / 2 - fontSize / 2 : 300;
+  const topCenter = viewportHeight / 2 - fontSize / 2;
   const topNav = (NAV_HEIGHT - fontSize) / 2 + 16;
   const logoTop = lerp(topCenter, topNav, progress);
 
@@ -95,19 +97,19 @@ export default function Header() {
         {/* These filter chains were working before the morph feature was added.
             They produce approximate CMYK colors after the difference blend. */}
         <GhostLayer
-          offset={activeAberration}
+          offset={-activeAberration}
           transition="top 0.45s cubic-bezier(0.25, 1, 0.5, 1)"
           filter="brightness(0) saturate(1) invert(13%) sepia(99%) saturate(7404%) hue-rotate(309deg) brightness(96%) contrast(103%)"
           {...sharedProps}
         />
         <GhostLayer
-          offset={activeAberration * 0.67}
+          offset={-activeAberration * 0.67}
           transition="top 0.28s cubic-bezier(0.25, 1, 0.5, 1)"
           filter="brightness(0) saturate(1) invert(94%) sepia(94%) saturate(743%) hue-rotate(358deg) brightness(103%) contrast(107%)"
           {...sharedProps}
         />
         <GhostLayer
-          offset={activeAberration * 0.33}
+          offset={-activeAberration * 0.33}
           transition="top 0.14s cubic-bezier(0.25, 1, 0.5, 1)"
           filter="brightness(0) saturate(1) invert(88%) sepia(53%) saturate(4417%) hue-rotate(152deg) brightness(101%) contrast(101%)"
           {...sharedProps}

@@ -1,4 +1,13 @@
 
+## TODO: Fix logo aberration asymmetry (scroll up vs down)
+
+The logo chromatic aberration looks different scrolling up vs down. The button and
+ticker are symmetric. The logo ghosts use `position: absolute` inside an unclipped
+wrapper — offsets in one direction escape visibly while the other direction is hidden.
+Need to clip properly or rethink offset direction so both directions feel the same.
+
+---
+
 ## TODO: Fix chromatic aberration colors on logo
 
 The ghost layer colors are slightly off (not pure CMYK) because the CSS filter chains

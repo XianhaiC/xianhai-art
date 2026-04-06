@@ -102,7 +102,7 @@ export default function ArtworkRow({ artwork, index, total }) {
           src="/sparkle.png"
           alt=""
           aria-hidden="true"
-          style={{ height: "32px", width: "auto", marginBottom: "8px" }}
+          style={{ height: "32px", width: "auto", marginBottom: "25px" }}
         />
       </div>
 
