@@ -1,35 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import useAberration from "@/hooks/useAberration";
 
 export default function AberrationButton({ href, children, style }) {
-  const [aberration, setAberration] = useState(0);
-  const lastScrollY = useRef(0);
-  const lastTime = useRef(Date.now());
-  const decayRef = useRef(null);
-
-  useEffect(() => {
-    function onScroll() {
-      const now = Date.now();
-      const dt = Math.max(now - lastTime.current, 1);
-      const delta = window.scrollY - lastScrollY.current;
-      const velocity = delta / dt;
-
-      lastScrollY.current = window.scrollY;
-      lastTime.current = now;
-
-      setAberration(Math.max(Math.min(velocity * 18, 18), -18));
-
-      if (decayRef.current) clearTimeout(decayRef.current);
-      decayRef.current = setTimeout(() => setAberration(0), 150);
-    }
-
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      if (decayRef.current) clearTimeout(decayRef.current);
-    };
-  }, []);
+  const aberration = useAberration();
 
   const baseStyle = {
     fontSize: "10px",

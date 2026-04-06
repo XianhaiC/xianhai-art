@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import useAberration from "@/hooks/useAberration";
 
 const NAV_HEIGHT = 72;
 const LARGE_PX = 420;
@@ -36,11 +37,9 @@ function GhostLayer({ offset, transition, filter, fontSize, fullOpacity, simpleO
 
 export default function Header() {
   const [progress, setProgress] = useState(0);
-  const [aberration, setAberration] = useState(0);
   const [viewportHeight, setViewportHeight] = useState(0);
+  const aberration = useAberration();
   const lastScrollY = useRef(0);
-  const lastTime = useRef(Date.now());
-  const decayRef = useRef(null);
 
   useEffect(() => {
     setViewportHeight(window.innerHeight);
@@ -51,23 +50,12 @@ export default function Header() {
 
   useEffect(() => {
     function onScroll() {
-      const now = Date.now();
-      const dt = Math.max(now - lastTime.current, 1);
-      const delta = window.scrollY - lastScrollY.current;
-      const velocity = delta / dt;
-      lastScrollY.current = window.scrollY;
-      lastTime.current = now;
       const p = Math.min(Math.max(window.scrollY / SCROLL_DISTANCE, 0), 1);
       setProgress(p);
-      setAberration(Math.max(Math.min(velocity * 18, 18), -18));
-      if (decayRef.current) clearTimeout(decayRef.current);
-      decayRef.current = setTimeout(() => setAberration(0), 150);
+      lastScrollY.current = window.scrollY;
     }
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      if (decayRef.current) clearTimeout(decayRef.current);
-    };
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   const fontSize = lerp(LARGE_PX, SMALL_PX, progress);

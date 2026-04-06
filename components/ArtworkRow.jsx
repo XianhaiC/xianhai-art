@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import AberrationButton from "@/components/AberrationButton";
 import ImageMagnifier from "@/components/ImageMagnifier";
+import useAberration from "@/hooks/useAberration";
 
 export default function ArtworkRow({ artwork, index, total }) {
   const rowRef = useRef(null);
@@ -13,6 +14,7 @@ export default function ArtworkRow({ artwork, index, total }) {
 
   const isImageLeft = index % 2 === 0;
   const number = String(total - index).padStart(2, "0");
+  const aberration = useAberration();
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -84,25 +86,44 @@ export default function ArtworkRow({ artwork, index, total }) {
         padding: isImageLeft ? "0 0 0 20px" : "0 20px 0 0",
       }}
     >
-      <div style={{ display: "flex", alignItems: "flex-end", gap: "12px" }}>
-        <span
-          style={{
-            fontFamily: "var(--font-counter)",
-            fontSize: "160px",
-            fontWeight: 100,
-            fontStyle: "italic",
-            lineHeight: 1,
-            color: "var(--ink)",
-            letterSpacing: "-0.04em",
-          }}
-        >
+      <div style={{ display: "flex", alignItems: "flex-end", gap: "12px", position: "relative" }}>
+        {/* Magenta ghost */}
+        <span aria-hidden="true" style={{
+          position: "absolute", top: `${aberration}px`, left: 0,
+          fontFamily: "var(--font-counter)", fontSize: "160px", fontWeight: 100,
+          fontStyle: "italic", lineHeight: 1, letterSpacing: "-0.04em",
+          color: "#ff00ff", pointerEvents: "none", whiteSpace: "nowrap",
+          transition: "top 0.45s cubic-bezier(0.25, 1, 0.5, 1)",
+        }}>{number}</span>
+        {/* Yellow ghost */}
+        <span aria-hidden="true" style={{
+          position: "absolute", top: `${aberration * 0.67}px`, left: 0,
+          fontFamily: "var(--font-counter)", fontSize: "160px", fontWeight: 100,
+          fontStyle: "italic", lineHeight: 1, letterSpacing: "-0.04em",
+          color: "#ffff00", pointerEvents: "none", whiteSpace: "nowrap",
+          transition: "top 0.28s cubic-bezier(0.25, 1, 0.5, 1)",
+        }}>{number}</span>
+        {/* Cyan ghost */}
+        <span aria-hidden="true" style={{
+          position: "absolute", top: `${aberration * 0.33}px`, left: 0,
+          fontFamily: "var(--font-counter)", fontSize: "160px", fontWeight: 100,
+          fontStyle: "italic", lineHeight: 1, letterSpacing: "-0.04em",
+          color: "#00ffff", pointerEvents: "none", whiteSpace: "nowrap",
+          transition: "top 0.14s cubic-bezier(0.25, 1, 0.5, 1)",
+        }}>{number}</span>
+        {/* Main number */}
+        <span style={{
+          fontFamily: "var(--font-counter)", fontSize: "160px", fontWeight: 100,
+          fontStyle: "italic", lineHeight: 1, color: "var(--ink)", letterSpacing: "-0.04em",
+          position: "relative",
+        }}>
           {number}
         </span>
         <img
           src="/sparkle.png"
           alt=""
           aria-hidden="true"
-          style={{ height: "32px", width: "auto", marginBottom: "25px" }}
+          style={{ height: "32px", width: "auto", marginBottom: "25px", position: "relative" }}
         />
       </div>
 
