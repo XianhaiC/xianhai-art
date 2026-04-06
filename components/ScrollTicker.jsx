@@ -6,6 +6,8 @@ import useAberration from "@/hooks/useAberration";
 const BASE_ITEMS = ["先海", "Digital Paintings", "Limited Editions", "Fine Art Prints"];
 const ITEMS = Array.from({ length: 12 }, () => BASE_ITEMS).flat();
 
+const H = 80;
+
 const TRACK_STYLE = {
   display: "flex",
   gap: "0",
@@ -19,24 +21,15 @@ const TRACK_STYLE = {
 const ITEM_STYLE = {
   display: "inline-flex",
   alignItems: "center",
-  gap: "32px",
-  paddingRight: "48px",
-  fontSize: "11px",
-  letterSpacing: "0.2em",
+  gap: "24px",
+  paddingRight: "40px",
+  fontSize: "13px",
+  letterSpacing: "0.14em",
   textTransform: "uppercase",
-  fontFamily: "var(--font-sans)",
-  fontWeight: 300,
+  fontFamily: "var(--font-counter)",
+  fontWeight: 100,
+  fontStyle: "italic",
   color: "#ffffff",
-};
-
-const DOT_STYLE = {
-  display: "inline-block",
-  width: "4px",
-  height: "4px",
-  borderRadius: "50%",
-  backgroundColor: "#ffffff",
-  opacity: 0.5,
-  flexShrink: 0,
 };
 
 function Track({ translateX }) {
@@ -45,7 +38,12 @@ function Track({ translateX }) {
       {[...ITEMS, ...ITEMS].map((item, i) => (
         <span key={i} style={ITEM_STYLE}>
           {item}
-          <span style={DOT_STYLE} />
+          <img src="/crossx.png" aria-hidden="true" style={{
+            height: "14px", width: "auto",
+            filter: "brightness(0) invert(1)",
+            opacity: 0.6,
+            flexShrink: 0,
+          }} />
         </span>
       ))}
     </div>
@@ -65,13 +63,13 @@ export default function ScrollTicker() {
   }, []);
 
   return (
-    <div style={{ position: "relative", width: "100%", height: "40px" }}>
+    <div style={{ position: "relative", width: "100%", height: `${H}px` }}>
 
       {/* Magenta — slowest */}
       <div style={{
         position: "absolute", left: 0, right: 0, zIndex: 1,
         top: `${spread}px`,
-        height: "40px",
+        height: `${H}px`,
         backgroundColor: "#ff00ff",
         overflow: "hidden",
         transition: "top 0.45s cubic-bezier(0.25, 1, 0.5, 1)",
@@ -83,7 +81,7 @@ export default function ScrollTicker() {
       <div style={{
         position: "absolute", left: 0, right: 0, zIndex: 2,
         top: `${spread * 0.67}px`,
-        height: "40px",
+        height: `${H}px`,
         backgroundColor: "#ffff00",
         overflow: "hidden",
         transition: "top 0.28s cubic-bezier(0.25, 1, 0.5, 1)",
@@ -95,7 +93,7 @@ export default function ScrollTicker() {
       <div style={{
         position: "absolute", left: 0, right: 0, zIndex: 3,
         top: `${spread * 0.33}px`,
-        height: "40px",
+        height: `${H}px`,
         backgroundColor: "#00ffff",
         overflow: "hidden",
         transition: "top 0.14s cubic-bezier(0.25, 1, 0.5, 1)",
@@ -107,7 +105,7 @@ export default function ScrollTicker() {
       <div style={{
         position: "absolute", left: 0, right: 0, zIndex: 4,
         top: 0,
-        height: "40px",
+        height: `${H}px`,
         backgroundColor: "#000000",
         overflow: "hidden",
       }}>
