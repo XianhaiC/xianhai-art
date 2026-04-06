@@ -84,19 +84,27 @@ export default function ArtworkRow({ artwork, index, total }) {
         padding: isImageLeft ? "0 0 0 20px" : "0 20px 0 0",
       }}
     >
-      <span
-        style={{
-          fontFamily: "var(--font-counter)",
-          fontSize: "160px",
-          fontWeight: 100,
-          fontStyle: "italic",
-          lineHeight: 1,
-          color: "var(--ink)",
-          letterSpacing: "-0.04em",
-        }}
-      >
-        {number}
-      </span>
+      <div style={{ display: "flex", alignItems: "flex-end", gap: "12px" }}>
+        <span
+          style={{
+            fontFamily: "var(--font-counter)",
+            fontSize: "160px",
+            fontWeight: 100,
+            fontStyle: "italic",
+            lineHeight: 1,
+            color: "var(--ink)",
+            letterSpacing: "-0.04em",
+          }}
+        >
+          {number}
+        </span>
+        <img
+          src="/sparkle.png"
+          alt=""
+          aria-hidden="true"
+          style={{ height: "32px", width: "auto", marginBottom: "8px" }}
+        />
+      </div>
 
       <p
         style={{

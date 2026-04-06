@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 
 const NAV_HEIGHT = 72;
 const LARGE_PX = 420;
-const SMALL_PX = 44;
+const SMALL_PX = 72;
 const SCROLL_DISTANCE = 400;
 
 function lerp(a, b, t) {
@@ -70,7 +70,7 @@ export default function Header() {
 
   const fontSize = lerp(LARGE_PX, SMALL_PX, progress);
   const topCenter = typeof window !== "undefined" ? window.innerHeight / 2 - fontSize / 2 : 300;
-  const topNav = (NAV_HEIGHT - fontSize) / 2;
+  const topNav = (NAV_HEIGHT - fontSize) / 2 + 16;
   const logoTop = lerp(topCenter, topNav, progress);
 
   const morphT = Math.min(Math.max((progress - 0.9) / 0.1, 0), 1);
