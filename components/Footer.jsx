@@ -8,13 +8,13 @@ export default function Footer() {
         display: "flex",
         justifyContent: "space-between",
         alignItems: "flex-end",
-        backgroundColor: "#000000",
+        borderTop: "1px solid var(--divider)",
       }}
     >
       <img
         src="/art-simple-logo.png"
         alt="先海"
-        style={{ height: "32px", width: "auto", filter: "brightness(0) invert(1)" }}
+        style={{ height: "32px", width: "auto" }}
       />
 
       <ul
@@ -41,7 +41,7 @@ export default function Footer() {
                 color: "#666666",
                 transition: "color 0.2s",
               }}
-              onMouseEnter={(e) => (e.target.style.color = "#ffffff")}
+              onMouseEnter={(e) => (e.target.style.color = "var(--ink)")}
               onMouseLeave={(e) => (e.target.style.color = "#666666")}
             >
               {label}

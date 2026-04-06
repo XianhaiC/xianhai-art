@@ -14,6 +14,7 @@ uniform float u_time;
 uniform float u_fadeHeight;
 uniform float u_maxOpacity;
 uniform float u_noiseScale;
+uniform vec3  u_color;
 
 // --- permutation hash ---
 float hash(vec2 p) {
@@ -54,7 +55,10 @@ float grain(vec2 p, float t) {
 
 void main() {
   vec2 uv = gl_FragCoord.xy / u_res;
-  float yNorm = 1.0 - uv.y; // flip: 0=top,1=bottom in UV
+  // Offset yNorm to account for the 300px extension above viewport
+  // so fade still reads 0=top-of-viewport, 1=bottom
+  float extraFrac = 300.0 / u_res.y;
+  float yNorm = 1.0 - uv.y - extraFrac; // 0=top of viewport
 
   // vertical fade
   float raw = max(0.0, 1.0 - yNorm / u_fadeHeight);
@@ -83,9 +87,18 @@ void main() {
   float combined = g * terrain;
 
   float alpha = combined * mask * u_maxOpacity;
-  gl_FragColor = vec4(0.0, 0.0, 0.0, alpha);
+  gl_FragColor = vec4(u_color, alpha);
 }
 `;
+
+function hexToRGB(hex) {
+  const h = hex.replace("#", "");
+  return [
+    parseInt(h.substring(0, 2), 16),
+    parseInt(h.substring(2, 4), 16),
+    parseInt(h.substring(4, 6), 16),
+  ];
+}
 
 function compileShader(gl, type, src) {
   const s = gl.createShader(type);
@@ -99,6 +112,7 @@ export default function GrainOverlay({
   maxOpacity  = 0.65,
   noiseScale  = 2.5,
   driftSpeed  = 0.015,  // terrain drift per second
+  colorRGB    = [0, 0, 0],
 }) {
   const canvasRef = useRef(null);
   const rafRef    = useRef(null);
@@ -133,17 +147,21 @@ export default function GrainOverlay({
     const uFadeHeight  = gl.getUniformLocation(prog, "u_fadeHeight");
     const uMaxOpacity  = gl.getUniformLocation(prog, "u_maxOpacity");
     const uNoiseScale  = gl.getUniformLocation(prog, "u_noiseScale");
+    const uColor       = gl.getUniformLocation(prog, "u_color");
 
     gl.uniform1f(uFadeHeight, fadeHeight);
     gl.uniform1f(uMaxOpacity, maxOpacity);
     gl.uniform1f(uNoiseScale, noiseScale);
+    const rgb = typeof colorRGB === "string" ? hexToRGB(colorRGB) : colorRGB;
+    gl.uniform3f(uColor, rgb[0] / 255, rgb[1] / 255, rgb[2] / 255);
 
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
+    const EXTRA = 300; // px above viewport to cover overscroll bounce
     function resize() {
       canvas.width  = window.innerWidth;
-      canvas.height = window.innerHeight;
+      canvas.height = window.innerHeight + EXTRA;
       gl.viewport(0, 0, canvas.width, canvas.height);
       gl.uniform2f(uRes, canvas.width, canvas.height);
     }
@@ -164,7 +182,7 @@ export default function GrainOverlay({
       window.removeEventListener("resize", resize);
       cancelAnimationFrame(rafRef.current);
     };
-  }, [fadeHeight, maxOpacity, noiseScale, driftSpeed]);
+  }, [fadeHeight, maxOpacity, noiseScale, driftSpeed, colorRGB]);
 
   return (
     <canvas
@@ -172,10 +190,11 @@ export default function GrainOverlay({
       aria-hidden="true"
       style={{
         position: "absolute",
-        top: 0, left: 0,
-        width: "100%", height: "100vh",
+        top: -300, left: 0,
+        width: "100%", height: "calc(100vh + 300px)",
         pointerEvents: "none",
-        zIndex: 99,
+        zIndex: 0,
+        mixBlendMode: "multiply",
       }}
     />
   );
