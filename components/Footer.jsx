@@ -11,16 +11,11 @@ export default function Footer() {
         borderTop: "1px solid var(--divider)",
       }}
     >
-      <span
-        style={{
-          fontFamily: "var(--font-serif)",
-          fontSize: "15px",
-          fontWeight: 300,
-          letterSpacing: "0.1em",
-        }}
-      >
-        先海
-      </span>
+      <img
+        src="/art-logo.png"
+        alt="先海"
+        style={{ height: "32px", width: "auto" }}
+      />
 
       <ul
         style={{
@@ -29,10 +24,16 @@ export default function Footer() {
           listStyle: "none",
         }}
       >
-        {["Instagram", "Twitter", "Shop"].map((label) => (
+        {[
+          { label: "Instagram", href: "#" },
+          { label: "Twitter", href: "https://x.com/muruuu" },
+          { label: "Shop", href: "#" },
+        ].map(({ label, href }) => (
           <li key={label}>
             <a
-              href="#"
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
               style={{
                 fontSize: "11px",
                 letterSpacing: "0.12em",

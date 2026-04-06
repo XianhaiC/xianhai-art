@@ -1,14 +1,18 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import AberrationButton from "@/components/AberrationButton";
+import ImageMagnifier from "@/components/ImageMagnifier";
 
 export default function ArtworkRow({ artwork, index, total }) {
   const rowRef = useRef(null);
+  const imgRef = useRef(null);
   const [visible, setVisible] = useState(false);
   const [hovered, setHovered] = useState(false);
+  const [magnifying, setMagnifying] = useState(false);
 
   const isImageLeft = index % 2 === 0;
-  const number = String(index + 1).padStart(2, "0");
+  const number = String(total - index).padStart(2, "0");
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -29,11 +33,12 @@ export default function ArtworkRow({ artwork, index, total }) {
     <div
       style={{
         overflow: "hidden",
-        cursor: "pointer",
+        cursor: "zoom-in",
         width: "100%",
         height: "100%",
         position: "relative",
       }}
+      onClick={() => setMagnifying(true)}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
@@ -57,6 +62,7 @@ export default function ArtworkRow({ artwork, index, total }) {
         />
       )}
       <img
+        ref={imgRef}
         src={artwork.image}
         alt=""
         style={{
@@ -64,8 +70,6 @@ export default function ArtworkRow({ artwork, index, total }) {
           height: "100%",
           objectFit: "cover",
           display: "block",
-          transform: hovered ? "scale(1.02)" : "scale(1)",
-          transition: "transform 0.6s ease",
         }}
       />
     </div>
@@ -82,12 +86,16 @@ export default function ArtworkRow({ artwork, index, total }) {
     >
       <span
         style={{
-          fontSize: "11px",
-          letterSpacing: "0.14em",
-          color: "var(--muted)",
+          fontFamily: "var(--font-counter)",
+          fontSize: "160px",
+          fontWeight: 100,
+          fontStyle: "italic",
+          lineHeight: 1,
+          color: "var(--ink)",
+          letterSpacing: "-0.04em",
         }}
       >
-        {number} / {String(total).padStart(2, "0")}
+        {number}
       </span>
 
       <p
@@ -111,7 +119,8 @@ export default function ArtworkRow({ artwork, index, total }) {
       >
         {[
           { label: "Medium", value: "Digital" },
-          { label: "Print size", value: "A3 / A2" },
+          { label: "Print size", value: artwork.printSize },
+          { label: "Resolution", value: artwork.resolution },
           { label: "Edition", value: "50" },
         ].map(({ label, value }) => (
           <div
@@ -143,23 +152,7 @@ export default function ArtworkRow({ artwork, index, total }) {
           marginTop: "16px",
         }}
       >
-        <a
-          href="#"
-          style={{
-            fontSize: "10px",
-            letterSpacing: "0.18em",
-            textTransform: "uppercase",
-            color: "var(--bg)",
-            backgroundColor: "var(--ink)",
-            padding: "11px 24px",
-            borderRadius: "999px",
-            transition: "opacity 0.2s",
-          }}
-          onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.7")}
-          onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
-        >
-          Order print
-        </a>
+        <AberrationButton href="#">Order print</AberrationButton>
         <a
           href="#"
           style={{
@@ -179,6 +172,14 @@ export default function ArtworkRow({ artwork, index, total }) {
   );
 
   return (
+    <>
+    {magnifying && (
+      <ImageMagnifier
+        src={artwork.image}
+        imageRef={imgRef}
+        onClose={() => setMagnifying(false)}
+      />
+    )}
     <div ref={rowRef}>
       <div
         style={{
@@ -219,5 +220,6 @@ export default function ArtworkRow({ artwork, index, total }) {
         />
       )}
     </div>
+    </>
   );
 }
