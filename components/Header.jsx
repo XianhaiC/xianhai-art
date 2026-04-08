@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import useAberration from "@/hooks/useAberration";
+import ChromeSparkle from "@/components/ChromeSparkle";
 
 const NAV_HEIGHT = 72;
 const LARGE_PX = 420;
@@ -133,10 +134,13 @@ export default function Header() {
         <p style={{ fontSize: "13px", color: "var(--muted)", letterSpacing: "0.04em", maxWidth: "360px", lineHeight: 1.7, marginBottom: "48px" }}>
           Original 2D digital paintings. Each piece available as a limited fine art print, shipped worldwide.
         </p>
-        <p style={{ fontSize: "11px", letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--muted)", display: "flex", alignItems: "center", gap: "12px" }}>
-          <span style={{ display: "block", width: "32px", height: "1px", backgroundColor: "var(--muted)" }} />
-          Scroll to explore
-        </p>
+        <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
+          <ChromeSparkle size={120} speed={1.0} />
+          <p style={{ fontSize: "11px", letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--muted)", display: "flex", alignItems: "center", gap: "12px" }}>
+            <span style={{ display: "block", width: "32px", height: "1px", backgroundColor: "var(--muted)" }} />
+            Scroll to explore
+          </p>
+        </div>
       </section>
     </>
   );

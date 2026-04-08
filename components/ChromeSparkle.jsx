@@ -27,98 +27,96 @@ const FRAG = `
 precision mediump float;
 varying vec2 v_uv;
 uniform sampler2D u_mask;
-uniform float u_time;
+uniform vec2 u_mouse;      // canvas-local 0..1
+uniform float u_proximity; // 0 = far away, 1 = mouse on top of canvas
 
-// ---- matcap UV from normal ----
-vec2 matcapUV(vec3 N) {
-  vec3 r = reflect(vec3(0.0, 0.0, -1.0), N);
-  float m = 2.0 * sqrt(r.x*r.x + r.y*r.y + (r.z+1.0)*(r.z+1.0));
-  return r.xy / m + 0.5;
+// ---- smooth rounded normal — curved dome per arm ----
+// Instead of flat pyramid faces, model each arm as a curved lobe:
+// the normal rotates smoothly from pointing outward at the tip
+// to pointing up at the center, with a gentle curve along the arm.
+vec3 surfaceNormal(vec2 uv) {
+  vec2 p = uv * 2.0 - 1.0;
+  float r = length(p);
+  float ax = abs(p.x), ay = abs(p.y);
+
+  // "Arm weight" — how much are we inside an arm vs the gap between arms
+  // High when one axis dominates strongly
+  float armWeight = abs(ax - ay) / (ax + ay + 0.001);
+  armWeight = smoothstep(0.0, 0.6, armWeight);
+
+  // Curved outward slope: normal tilts outward along dominant axis,
+  // but falls off toward the tip (r→1) and toward center (r→0)
+  // giving a convex dome shape rather than flat facet
+  float tipFalloff = 1.0 - r * r; // dome: highest curvature at center
+  float slope = 2.5 * tipFalloff * armWeight;
+
+  vec3 N;
+  if (ax > ay) {
+    N = normalize(vec3(sign(p.x) * slope, p.y * 0.5, 1.0));
+  } else {
+    N = normalize(vec3(p.x * 0.5, sign(p.y) * slope, 1.0));
+  }
+
+  // Near exact center: blend to straight up
+  float centerBlend = smoothstep(0.12, 0.0, r);
+  return normalize(mix(N, vec3(0.0, 0.0, 1.0), centerBlend));
 }
 
-// ---- procedural chrome matcap ----
-// Simulates: black base, vivid blue sky band, sharp white highlight, dark ground
-vec3 chromeMatcap(vec2 uv, float t) {
-  float v = uv.y;
+// ---- liquid chrome + chromatic aberration ----
+// No time-based animation — purely mouse driven
+vec3 liquidChrome(vec3 N, vec2 mouse, float proximity) {
+  // Reflect off surface normal
+  vec3 r = reflect(vec3(0.0, 0.0, -1.0), N);
+  vec2 muv = r.xy * 0.5 + 0.5;
 
-  // Rotating specular streak
-  float angle = t * 0.4;
-  vec2 rot = vec2(cos(angle), sin(angle));
-  float streak = dot(uv - 0.5, rot);
-  float spec = smoothstep(0.08, 0.0, abs(streak - 0.05));
+  // Mouse shifts the reflection pool — proximity-weighted
+  muv += (mouse - 0.5) * 0.28 * proximity;
 
-  // Sky (top ~35%)
-  vec3 sky   = mix(vec3(0.10, 0.30, 0.70), vec3(0.55, 0.75, 1.00), smoothstep(0.65, 1.0, v));
-  // Ground (bottom ~35%)
-  vec3 ground = mix(vec3(0.04, 0.04, 0.06), vec3(0.15, 0.12, 0.10), smoothstep(0.0, 0.35, v));
-  // White band
-  vec3 white = vec3(1.0);
-  // Black void
-  vec3 black = vec3(0.0);
+  float v = muv.y;
 
-  vec3 col = black;
-  col = mix(col, ground, smoothstep(0.0,  0.30, v));
-  col = mix(col, black,  smoothstep(0.30, 0.42, v));
-  col = mix(col, white,  smoothstep(0.42, 0.55, v));
-  col = mix(col, black,  smoothstep(0.55, 0.60, v));
-  col = mix(col, sky,    smoothstep(0.60, 0.75, v));
+  // High-contrast black/white — mercury core
+  float bands = smoothstep(0.45, 0.55, v);
+  vec3 col = mix(vec3(0.02, 0.02, 0.03), vec3(0.90, 0.93, 1.0), bands);
 
-  // Specular streak
-  col = mix(col, white, spec * 0.9);
+  // Sharp bright horizon flash at the split
+  float flash = smoothstep(0.04, 0.0, abs(v - 0.5));
+  col += flash * 0.85;
+
+  // Fresnel — edges face away from viewer
+  float fres = pow(1.0 - abs(N.z), 2.5);
+
+  // Chromatic aberration on edges
+  vec2 aberDir = normalize(N.xy + vec2(0.001));
+  float aberScale = fres * 0.07;
+  float vR = (muv + aberDir * aberScale).y;
+  float vB = (muv - aberDir * aberScale).y;
+  float bR = smoothstep(0.45, 0.55, vR);
+  float bG = smoothstep(0.45, 0.55, v);
+  float bB = smoothstep(0.45, 0.55, vB);
+  vec3 aberCol = mix(vec3(0.02,0.02,0.03), vec3(0.90,0.93,1.0), vec3(bR, bG, bB));
+  col = mix(col, aberCol, fres * 0.8);
+
+  // Prismatic rainbow at extreme edges
+  vec3 rainbow = 0.5 + 0.5 * cos(6.28318 * (fres * 0.6 + vec3(0.0, 0.33, 0.67)));
+  col = mix(col, rainbow, pow(fres, 3.0) * 0.85);
+
+  // Mouse glint — white hot spot, only when close
+  float glint = smoothstep(0.16, 0.0, length(muv - mouse)) * proximity;
+  col += glint * vec3(1.0, 0.96, 0.9) * 1.5;
 
   return col;
 }
 
-// ---- analytic surface normal from UV position ----
-// The shape is a 4-pointed star pyramid viewed from above.
-// Each arm points in one of 4 cardinal directions; the slope
-// faces outward-downward from the center apex.
-vec3 surfaceNormal(vec2 uv) {
-  vec2 p = uv * 2.0 - 1.0; // -1..1
-  float ax = abs(p.x), ay = abs(p.y);
-
-  // Which of the 4 arms are we in? (based on dominant axis)
-  // Normal slopes away from center in the arm direction + up (z)
-  vec3 N;
-  float apex = 0.08; // blend radius near center
-  float centerBlend = smoothstep(apex, 0.0, length(p));
-
-  if (ax > ay) {
-    // Left/right arm
-    float side = sign(p.x);
-    N = normalize(vec3(side * 0.7, p.y * 0.3, 0.6));
-  } else {
-    // Top/bottom arm
-    float side = sign(p.y);
-    N = normalize(vec3(p.x * 0.3, side * 0.7, 0.6));
-  }
-
-  // Near apex: blend toward straight up
-  N = normalize(mix(N, vec3(0.0, 0.0, 1.0), centerBlend));
-  return N;
-}
-
-// ---- extra fresnel rim ----
-float fresnel(vec3 N) {
-  float f = 1.0 - abs(N.z);
-  return pow(f, 3.0) * 0.6;
-}
-
 void main() {
-  // Shape mask from PNG alpha
   float mask = texture2D(u_mask, v_uv).a;
   if (mask < 0.5) discard;
 
   vec3 N   = surfaceNormal(v_uv);
-  vec2 muv = matcapUV(N);
-  vec3 col = chromeMatcap(muv, u_time);
+  vec3 col = liquidChrome(N, u_mouse, u_proximity);
 
-  // Fresnel rim brightening
-  col = mix(col, vec3(1.0), fresnel(N));
-
-  // Slight apex glow
-  float apex = smoothstep(0.08, 0.0, length(v_uv * 2.0 - 1.0));
-  col = mix(col, vec3(1.0), apex * 0.6);
+  // Subtle center glow
+  float inner = smoothstep(0.5, 0.0, length(v_uv * 2.0 - 1.0));
+  col += inner * 0.08;
 
   gl_FragColor = vec4(col, mask);
 }
@@ -149,6 +147,10 @@ export default function ChromeSparkle({ size = 64, speed = 1.0, style }) {
   useEffect(() => {
     const canvas = canvasRef.current;
     const gl = canvas.getContext("webgl", { alpha: true, premultipliedAlpha: false });
+    const toRGB = (hex) => {
+      const h = hex.replace("#","");
+      return [parseInt(h.slice(0,2),16)/255, parseInt(h.slice(2,4),16)/255, parseInt(h.slice(4,6),16)/255];
+    };
     if (!gl) return;
 
     gl.enable(gl.BLEND);
@@ -180,23 +182,46 @@ export default function ChromeSparkle({ size = 64, speed = 1.0, style }) {
     };
     img.src = "/crossx.png";
 
-    const uTime = gl.getUniformLocation(prog, "u_time");
-    const uMask = gl.getUniformLocation(prog, "u_mask");
+    const uMask      = gl.getUniformLocation(prog, "u_mask");
+    const uMouse     = gl.getUniformLocation(prog, "u_mouse");
+    const uProximity = gl.getUniformLocation(prog, "u_proximity");
     gl.uniform1i(uMask, 0);
+    gl.uniform2f(uMouse, 0.5, 0.5);
+    gl.uniform1f(uProximity, 0.0);
+
+    let mouseX = 0.5, mouseY = 0.5, proximity = 0.0;
+    // Influence radius in pixels — mouse must be within this distance to affect shader
+    const INFLUENCE_PX = 220;
+    const handleMouseMove = (e) => {
+      const rect = canvas.getBoundingClientRect();
+      // Canvas-local normalized coords
+      mouseX = (e.clientX - rect.left) / rect.width;
+      mouseY = 1.0 - (e.clientY - rect.top) / rect.height;
+      // Distance from canvas center in screen pixels
+      const cx = rect.left + rect.width  / 2;
+      const cy = rect.top  + rect.height / 2;
+      const dx = e.clientX - cx;
+      const dy = e.clientY - cy;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      // Smooth falloff: 1 when on top, 0 when >= INFLUENCE_PX away
+      proximity = Math.max(0, 1 - dist / INFLUENCE_PX);
+      // Ease it (quadratic) so it really only kicks in when close
+      proximity = proximity * proximity;
+    };
+    window.addEventListener("mousemove", handleMouseMove);
 
     let raf;
-    let t = 0;
-    function draw(ts) {
-      t = ts * 0.001 * speed;
+    function draw() {
       gl.viewport(0, 0, canvas.width, canvas.height);
       gl.clearColor(0, 0, 0, 0);
       gl.clear(gl.COLOR_BUFFER_BIT);
-      gl.uniform1f(uTime, t);
+      gl.uniform2f(uMouse, mouseX, mouseY);
+      gl.uniform1f(uProximity, proximity);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
       raf = requestAnimationFrame(draw);
     }
     raf = requestAnimationFrame(draw);
-    return () => cancelAnimationFrame(raf);
+    return () => { cancelAnimationFrame(raf); window.removeEventListener("mousemove", handleMouseMove); };
   }, [speed]);
 
   return (
