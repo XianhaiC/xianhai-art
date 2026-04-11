@@ -2,7 +2,7 @@
 
 import useAberration from "@/hooks/useAberration";
 
-export default function AberrationButton({ href, children, style }) {
+export default function AberrationButton({ href, children, style, onClick }) {
   const aberration = useAberration();
 
   const baseStyle = {
@@ -31,7 +31,7 @@ export default function AberrationButton({ href, children, style }) {
   };
 
   return (
-    <a href={href} style={{ position: "relative", display: "inline-block" }}
+    <a href={href} onClick={onClick} style={{ position: "relative", display: "inline-block" }}
       onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.7")}
       onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
     >

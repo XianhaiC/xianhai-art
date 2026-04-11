@@ -180,15 +180,17 @@ export default function ArtworkRow({ artwork, index, total }) {
           marginTop: "16px",
         }}
       >
-        <AberrationButton href="#">Order print</AberrationButton>
+        <AberrationButton href="#" onClick={(e) => e.preventDefault()}>Order print</AberrationButton>
         <a
           href="#"
+          onClick={(e) => { e.preventDefault(); setMagnifying(true); }}
           style={{
             fontSize: "11px",
             letterSpacing: "0.14em",
             textTransform: "uppercase",
             color: "var(--muted)",
             transition: "color 0.2s",
+            cursor: "pointer",
           }}
           onMouseEnter={(e) => (e.currentTarget.style.color = "var(--ink)")}
           onMouseLeave={(e) => (e.currentTarget.style.color = "var(--muted)")}
